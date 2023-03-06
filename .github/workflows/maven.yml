@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  DOCKER_IMG_NAME: data-rest-test
+  DOCKER_IMG_TAG: $DOCKER_IMG_NAME:$(date +%s)
+
 jobs:
   build:
 
@@ -22,7 +26,22 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag data-rest-test:$(date +%s)
-   # - name: Upload to host
-    #  run: 
-    #- name: Run app
+      run: docker build . --file Dockerfile --tag $DOCKER_IMG_TAG
+    - name: Save image tar
+      run: docker save -o $DOCKER_IMG_TAG $DOCKER_IMG_TAG
+    - name: Install SSH Key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.SSH_PRIVATE_KEY }} 
+        known_hosts: 'placeholder'
+    - name: Adding Known Hosts
+      run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      
+    - name: Upload with rsync
+      run: rsync -avz ./$DOCKER_IMG_NAME ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/web-backend/$DOCKER_IMG_TAG
+    
+    - name: Load app
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker load -i $DOCKER_IMG_TAG'
+    - name: Run app
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker run -p 8080:8080 $DOCKER_IMG_TAG'
+      
