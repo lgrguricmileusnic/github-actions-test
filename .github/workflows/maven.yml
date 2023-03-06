@@ -8,6 +8,7 @@ on:
 
 env:
   DOCKER_IMG_NAME: data-rest-test
+  DOCKER_DIR: /home/${{ secrets.SSH_USER }}/web-backend
 
 jobs:
   build:
@@ -24,33 +25,41 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+      
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag $DOCKER_IMG_NAME
+      
     - name: Save image tar
       run: docker save -o $DOCKER_IMG_NAME $DOCKER_IMG_NAME
+      
     - name: Install SSH Key
       uses: shimataro/ssh-key-action@v2
       with:
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
         known_hosts: 'placeholder'
+        
     - name: Adding Known Hosts
       run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       
     - name: Upload with rsync
-      run: rsync -avz ./$DOCKER_IMG_NAME ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/web-backend/$DOCKER_IMG_NAME
+      run: rsync -avz ./$DOCKER_IMG_NAME ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DOCKER_DIR/$DOCKER_IMG_NAME
+      
     - name: Load docker image
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
-        script: docker load -i data-rest-test
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
+        envs: DOCKER_DIR,DOCKER_IMG_NAME
+        script: docker load -i $DOCKER_DIR/$DOCKER_IMG_NAME
+        
     - name: Run docker image
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }} 
-        script: docker run -p 8080:9000 data-rest-test
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        envs: DOCKER_DIR,DOCKER_IMG_NAME
+        script: docker run -p 8080:9000 $DOCKER_DIR/$DOCKER_IMG_NAME
 
       
