@@ -44,11 +44,13 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
         script: docker load -i $DOCKER_IMG_NAME
+        key: ${{ secrets.SSH_PRIVATE_KEY }} 
     - name: Run docker image
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }} 
         script: docker run -p 8080:9000 $DOCKER_IMG_NAME
 
       
