@@ -21,3 +21,8 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag data-rest-test:$(date +%s)
+   # - name: Upload to host
+    #  run: 
+    #- name: Run app
