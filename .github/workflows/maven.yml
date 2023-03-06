@@ -41,7 +41,7 @@ jobs:
       run: rsync -avz ./$DOCKER_IMG_NAME ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/web-backend/$DOCKER_IMG_NAME
     
     - name: Load app
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker load -i ${DOCKER_IMG_NAME}'
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker load -i ${{DOCKER_IMG_NAME}}'
     - name: Run app
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker run -p 8080:8080 ${DOCKER_IMG_NAME}'
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker run -p 8080:8080 ${{DOCKER_IMG_NAME}}'
       
