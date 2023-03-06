@@ -43,7 +43,7 @@ jobs:
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
-        script: docker load -i $DOCKER_IMG_NAME
+        script: docker load -i data-rest-test
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
     - name: Run docker image
       uses: appleboy/ssh-action@v0.1.8
@@ -51,6 +51,6 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
-        script: docker run -p 8080:9000 $DOCKER_IMG_NAME
+        script: docker run -p 8080:9000 data-rest-test
 
       
