@@ -68,7 +68,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         envs: DOCKER_IMG_NAME
         script: | 
-          docker rm --force $(docker ps -a |  grep $DOCKER_IMG_NAME | tr -s " " | cut -d " " -f1)
+          docker rm --force $(docker ps -a |  grep $DOCKER_IMG_NAME | tr -s " " | cut -d " " -f1) || echo "No containers running."
           docker run -d -p ${{ secrets.SSH_HOST }}:9000:8080 $DOCKER_IMG_NAME
 
       
