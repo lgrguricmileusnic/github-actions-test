@@ -11,7 +11,7 @@ env:
   DOCKER_DIR: /home/${{ secrets.SSH_USER }}/web-backend
 
 jobs:
-  build:
+  build-and-deploy:
 
     runs-on: ubuntu-latest
 
@@ -60,6 +60,8 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         envs: DOCKER_IMG_NAME
-        script: docker run -d -p 9000:8080 $DOCKER_IMG_NAME
+        script: | 
+          docker rm --force $(docker ps -a |  grep $DOCKER_IMG_NAME | tr -s " " | cut -d " " -f1)
+          docker run -d -p 9000:8080 $DOCKER_IMG_NAME
 
       
