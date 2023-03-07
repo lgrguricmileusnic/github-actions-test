@@ -59,7 +59,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        envs: DOCKER_DIR,DOCKER_IMG_NAME
-        script: docker run -p 8080:9000 $DOCKER_IMG_NAME
+        envs: DOCKER_IMG_NAME
+        script: docker run -d -p 9000:8080 $DOCKER_IMG_NAME
 
       
