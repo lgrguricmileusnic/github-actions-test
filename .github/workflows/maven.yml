@@ -39,7 +39,7 @@ jobs:
       run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       
     - name: Upload with rsync
-      run: rsync -avz ./Dockerfile ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DOCKER_DIR/Dockerfile
+      run: rsync -avz ./*.jar ./Dockerfile ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DOCKER_DIR/Dockerfile
       
 #     - name: Load docker image
 #       uses: appleboy/ssh-action@v0.1.8
@@ -57,7 +57,7 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
         envs: DOCKER_DIR,DOCKER_IMG_NAME
-        script: docker build . --file $DOCKER_DIR/Dockerfile --tag $DOCKER_IMG_NAME
+        script: docker build $DOCKER_DIR --file $DOCKER_DIR/Dockerfile --tag $DOCKER_IMG_NAME
 
       
     - name: Run docker image
