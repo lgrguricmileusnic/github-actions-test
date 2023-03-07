@@ -26,11 +26,8 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
       
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag $DOCKER_IMG_NAME
-      
-    - name: Save image tar
-      run: docker save -o $DOCKER_IMG_NAME $DOCKER_IMG_NAME
+#     - name: Save image tar
+#       run: docker save -o $DOCKER_IMG_NAME $DOCKER_IMG_NAME
       
     - name: Install SSH Key
       uses: shimataro/ssh-key-action@v2
@@ -42,17 +39,27 @@ jobs:
       run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
       
     - name: Upload with rsync
-      run: rsync -avz ./$DOCKER_IMG_NAME ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DOCKER_DIR/$DOCKER_IMG_NAME
+      run: rsync -avz ./Dockerfile ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$DOCKER_DIR/Dockerfile
       
-    - name: Load docker image
+#     - name: Load docker image
+#       uses: appleboy/ssh-action@v0.1.8
+#       with:
+#         host: ${{ secrets.SSH_HOST }}
+#         username: ${{ secrets.SSH_USER }}
+#         key: ${{ secrets.SSH_PRIVATE_KEY }} 
+#         envs: DOCKER_DIR,DOCKER_IMG_NAME
+#         script: docker load -i $DOCKER_DIR/$DOCKER_IMG_NAME
+
+    - name: Build the Docker image
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }} 
         envs: DOCKER_DIR,DOCKER_IMG_NAME
-        script: docker load -i $DOCKER_DIR/$DOCKER_IMG_NAME
-        
+        script: docker build . --file $DOCKER_DIR/Dockerfile --tag $DOCKER_IMG_NAME
+
+      
     - name: Run docker image
       uses: appleboy/ssh-action@v0.1.8
       with:
@@ -62,6 +69,6 @@ jobs:
         envs: DOCKER_IMG_NAME
         script: | 
           docker rm --force $(docker ps -a |  grep $DOCKER_IMG_NAME | tr -s " " | cut -d " " -f1)
-          docker run -d -p 9000:8080 $DOCKER_IMG_NAME
+          docker run -d -p ${{ secrets.SSH_HOST }}:9000:8080 $DOCKER_IMG_NAME
 
       
